@@ -1,18 +1,26 @@
 const TP = require("touchportal-api");
 const RPC = require("../discord-rpc/src/index.js");
 
-const {DiscordConfig, pluginId} = require("./discordConfig.js");
-const {open} = require("out-url");
+const { DiscordConfig, pluginId } = require("./discordConfig.js");
+const { open } = require("out-url");
 const discordKeyMap = require("./utils/discordKeys.js");
-const {logIt, convertPercentageToVolume, getUserIdFromIndex, platform, discord_paths, isEmpty, setDebugMode, createStates} = require("./utils/helpers.js");
-const {ProcWatcher} = require("./core/processWatcher.js");
-const {DiscordConnector} = require("./core/DiscordConnector.js");
-const {UserStateHandler} = require("./handlers/discord/userStateHandler.js");
-const {VoiceStateHandler} = require("./handlers/discord/voiceStateHandler.js");
-const {NotificationHandler} = require("./handlers/discord/notificationHandler.js");
-const {VoiceChannelHandler}= require("./handlers/discord/voiceChannelHandler.js");
-const {onAction} = require("./handlers/touchportal/onAction.js");
-
+const {
+  logIt,
+  convertPercentageToVolume,
+  getUserIdFromIndex,
+  platform,
+  discord_paths,
+  isEmpty,
+  setDebugMode,
+  createStates,
+} = require("./utils/helpers.js");
+const { ProcWatcher } = require("./core/processWatcher.js");
+const { DiscordConnector } = require("./core/DiscordConnector.js");
+const { UserStateHandler } = require("./handlers/discord/userStateHandler.js");
+const { VoiceStateHandler } = require("./handlers/discord/voiceStateHandler.js");
+const { NotificationHandler } = require("./handlers/discord/notificationHandler.js");
+const { VoiceChannelHandler } = require("./handlers/discord/voiceChannelHandler.js");
+const { onAction } = require("./handlers/touchportal/onAction.js");
 
 // ------------
 // # Issues
@@ -24,24 +32,28 @@ const {onAction} = require("./handlers/touchportal/onAction.js");
 // Fix Crash when discord reboots for an update
 // ------------
 
-
 const TPClient = new TP.Client();
 const DG = new DiscordConfig();
 const procWatcher = new ProcWatcher();
 const notificationHandler = new NotificationHandler(TPClient, DG);
-const userStateHandler = new UserStateHandler(TPClient, DG );
+const userStateHandler = new UserStateHandler(TPClient, DG);
 const voiceChannelHandler = new VoiceChannelHandler(DG, TPClient, userStateHandler);
-const voiceStateHandler = new VoiceStateHandler(DG,  TPClient, userStateHandler, notificationHandler, voiceChannelHandler, procWatcher);
+const voiceStateHandler = new VoiceStateHandler(
+  DG,
+  TPClient,
+  userStateHandler,
+  notificationHandler,
+  voiceChannelHandler,
+  procWatcher,
+);
 const Discord = new DiscordConnector(TPClient, DG, RPC, userStateHandler, notificationHandler, voiceStateHandler);
 
 voiceStateHandler.initiate_doLogin(Discord.doLogin);
 
-
-
 // ----------------------------------------------------
 // On Info
 // ----------------------------------------------------
-TPClient.on("Info", (data) => {
+TPClient.on("Info", (_data) => {
   logIt("DEBUG", "Info : We received info from Touch-Portal");
   // Adding predefined states for the users
   TPClient.choiceUpdate(DG.pttKeyStateId, Object.keys(discordKeyMap.keyboard.keyMap));
@@ -54,10 +66,6 @@ TPClient.on("Info", (data) => {
     createStates(`user_${i}`, DG.DEFAULT_USER_STATES, `VC | User_${i}`, TPClient);
   }
 });
-
-
-
-
 
 // ----------------------------------------------------
 // On Settings
@@ -74,7 +82,7 @@ TPClient.on("Settings", (data) => {
       reconnect = true;
     }
     DG.pluginSettings[key] = setting[key];
-   
+
     logIt("DEBUG", "Settings: Setting received for |" + key + "|");
   });
 
@@ -82,8 +90,7 @@ TPClient.on("Settings", (data) => {
   setDebugMode(DG.pluginSettings["Discord Debug Mode"]);
 
   if (DG.pluginSettings["VoiceActivity Tracker - Seperate each ID by commas"].length > 0) {
-    let customUsers =
-      DG.pluginSettings["VoiceActivity Tracker - Seperate each ID by commas"].split(",");
+    let customUsers = DG.pluginSettings["VoiceActivity Tracker - Seperate each ID by commas"].split(",");
     customUsers.forEach((user, index) => {
       DG.customVoiceAcivityUsers[user] = `Custom${index}`;
     });
@@ -91,7 +98,7 @@ TPClient.on("Settings", (data) => {
     for (let userId in DG.customVoiceAcivityUsers) {
       try {
         let customID = DG.customVoiceAcivityUsers[userId];
-        createStates({prefix:customID, states:DG.DEFAULT_USER_STATES, TPClient:TPClient});
+        createStates({ prefix: customID, states: DG.DEFAULT_USER_STATES, TPClient: TPClient });
       } catch (error) {}
     }
   }
@@ -111,18 +118,12 @@ TPClient.on("Settings", (data) => {
   if (platform != "win32" || DG.pluginSettings["Skip Process Watcher"].toLowerCase() == "yes") {
     TPClient.stateUpdate("discord_running", "Unknown");
     procWatcher.stopWatch();
-    Discord.doLogin()
-  } else if (
-    platform == "win32" &&
-    DG.pluginSettings["Skip Process Watcher"].toLowerCase() == "no"
-  ) {
+    Discord.doLogin();
+  } else if (platform == "win32" && DG.pluginSettings["Skip Process Watcher"].toLowerCase() == "no") {
     logIt("INFO", `Starting process watcher for ${discord_paths[platform]}`);
     procWatcher.watch(discord_paths[platform]);
   }
 });
-
-
-
 
 // ----------------------------------------------------
 // On Update
@@ -138,12 +139,9 @@ TPClient.on("Update", (curVersion, newVersion) => {
         id: `${pluginId}_update_notification_go_to_download`,
         title: "Go To Download Location",
       },
-    ]
+    ],
   );
 });
-
-
-
 
 // ----------------------------------------------------
 // On Notification Clicked
@@ -155,21 +153,15 @@ TPClient.on("NotificationClicked", (data) => {
   }
 });
 
-
-
-
 // ----------------------------------------------------
 // On TouchPortal Close
 // ----------------------------------------------------
-TPClient.on("Close", (data) => {
+TPClient.on("Close", (_data) => {
   logIt("WARN", "Closing due to TouchPortal sending closePlugin message");
   TPClient.stateUpdate("discord_running", "Unknown");
   TPClient.stateUpdate("discord_connected", "Disconnected");
   TPClient.settingUpdate("Plugin Connected", "Disconnected");
 });
-
-
-
 
 // ----------------------------------------------------
 // On Action
@@ -182,47 +174,42 @@ TPClient.on("Action", (data, isHeld) => {
   }
 });
 
-
-
-
 // ----------------------------------------------------
 // On Connector Change
 // ----------------------------------------------------
 TPClient.on("ConnectorChange", (data) => {
-    logIt("DEBUG", `Connector change event fired ` + JSON.stringify(data));
-    const action = data.connectorId;
-    if (DG.connected) {
-      if (action === "discord_voice_volume_connector") {
-        let newVol = parseInt(data.value, 10);
-        newVol = Math.max(0, Math.min(newVol, 100));
-        DG.Client.setVoiceSettings({
-          input: {volume: convertPercentageToVolume(newVol)},
+  logIt("DEBUG", "Connector change event fired " + JSON.stringify(data));
+  const action = data.connectorId;
+  if (DG.connected) {
+    if (action === "discord_voice_volume_connector") {
+      let newVol = parseInt(data.value, 10);
+      newVol = Math.max(0, Math.min(newVol, 100));
+      DG.Client.setVoiceSettings({
+        input: { volume: convertPercentageToVolume(newVol) },
+      });
+    } else if (action === "discord_speaker_volume_connector") {
+      let newVol = parseInt(data.value, 10);
+      newVol = Math.max(0, Math.min(newVol, 100)) * 2;
+      DG.Client.setVoiceSettings({
+        output: { volume: convertPercentageToVolume(newVol) },
+      });
+    } else if (action === "discord_voice_volume_action_connector") {
+      let newVol = parseInt(data.value, 10);
+      newVol = Math.max(0, Math.min(newVol, 100)) * 2;
+      const userId = getUserIdFromIndex(data.data[0].value, DG.currentVoiceUsers);
+      if (userId !== undefined) {
+        logIt("DEBUG", "Setting Voice Volume for ", userId, " to ", newVol / 2);
+        DG.Client.setUserVoiceSettings(userId, {
+          volume: convertPercentageToVolume(newVol),
         });
-      } else if (action === "discord_speaker_volume_connector") {
-        let newVol = parseInt(data.value, 10);
-        newVol = Math.max(0, Math.min(newVol, 100)) * 2;
-        DG.Client.setVoiceSettings({
-          output: {volume: convertPercentageToVolume(newVol)},
-        });
-      } else if (action === "discord_voice_volume_action_connector") {
-        let newVol = parseInt(data.value, 10);
-        newVol = Math.max(0, Math.min(newVol, 100)) * 2;
-        const userId = getUserIdFromIndex(data.data[0].value, DG.currentVoiceUsers);
-        if (userId !== undefined) {
-          logIt("DEBUG", "Setting Voice Volume for ", userId, " to ", newVol/2);
-          DG.Client.setUserVoiceSettings(userId, {
-            volume: convertPercentageToVolume(newVol),
-          });
-        }
-      } else {
-        logIt("WARN", `Unknown action called ${action}`);
       }
     } else {
-      logIt("WARN", "Action: Not connected to Discord, ignoring action");
+      logIt("WARN", `Unknown action called ${action}`);
     }
-  
+  } else {
+    logIt("WARN", "Action: Not connected to Discord, ignoring action");
+  }
 });
-
 
 // ----------------------------------------------------
 // On List Change
@@ -237,10 +224,10 @@ TPClient.on("ListChange", (data) => {
   }
 
   if (data.actionId === "discord_setDefaultAudioDevice") {
-    if (data.listId === "discord_DeviceType"){
+    if (data.listId === "discord_DeviceType") {
       if (data.value === "Input") {
-      TPClient.choiceUpdate("discord_SelectedDevice", DG.voiceSettings.inputDeviceNames);
-      }else if (data.value === "Output") {
+        TPClient.choiceUpdate("discord_SelectedDevice", DG.voiceSettings.inputDeviceNames);
+      } else if (data.value === "Output") {
         TPClient.choiceUpdate("discord_SelectedDevice", DG.voiceSettings.outputDeviceNames);
       }
     }
@@ -268,15 +255,11 @@ TPClient.on("ListChange", (data) => {
       TPClient.choiceUpdateSpecific(
         "discordServerChannel",
         DG.channels[guildId][channelType.toLowerCase()].array,
-        data.instanceId
+        data.instanceId,
       );
     }
   }
 });
-
-
-
-
 
 // ----------------------------------------------------
 // Process Watcher
@@ -302,8 +285,5 @@ procWatcher.on("processTerminated", (processName) => {
   }
 });
 
-
 logIt("INFO", "Initiating TP Client");
-TPClient.connect({pluginId: pluginId, updateUrl: DG.updateUrl});
-
-
+TPClient.connect({ pluginId: pluginId, updateUrl: DG.updateUrl });

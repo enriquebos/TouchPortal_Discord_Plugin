@@ -1,0 +1,50 @@
+{
+  "root": true,
+  "env": {
+    "commonjs": true,
+    "es2021": true,
+    "node": true
+  },
+  "extends": [
+    "eslint:recommended"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "script"
+  },
+  "ignorePatterns": [
+    "node_modules/",
+    "discord-rpc/",
+    "base/",
+    "Installers/",
+    "resources/",
+    "package.json",
+    "package-lock.json"
+  ],
+  "rules": {
+    "camelcase": "off",
+    "eqeqeq": "off",
+    "no-console": "off",
+    "no-empty": "off",
+    "no-plusplus": "off",
+    "no-prototype-builtins": "warn",
+    "no-undef": "warn",
+    "no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_"
+      }
+    ],
+    "quotes": [
+      "warn",
+      "double",
+      {
+        "avoidEscape": true
+      }
+    ],
+    "semi": [
+      "warn",
+      "always"
+    ]
+  }
+}

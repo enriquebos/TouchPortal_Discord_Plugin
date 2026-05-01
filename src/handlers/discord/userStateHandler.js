@@ -1,17 +1,28 @@
-const {convertVolumeToPercentage, imageToBase64, logIt, createStates, diff} = require("../../utils/helpers.js");
+const { convertVolumeToPercentage, imageToBase64, logIt, createStates, diff } = require("../../utils/helpers.js");
 
 class UserStateHandler {
   constructor(TPClient, DG) {
     // This is a 128px base64 image of a blank avatar
     this.TPClient = TPClient;
     this.DG = DG;
-    this.base64Avatar = "iVBORw0KGgoAAAANSUhEUgAAAIAAAACAAgMAAAC+UIlYAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAlQTFRFAAAAAAAAAAAAg2PpwAAAAAN0Uk5TAAIBv0eWygAAADdJREFUeJztziEBACAMAEHWgerrgacSIWjAFAbu9YmPVhQAAAAAAAAAAAAA8DDo6wxyjusPH4ANKzEDgZ7ZsS4AAAAASUVORK5CYII=";
+    this.base64Avatar =
+      "iVBORw0KGgoAAAANSUhEUgAAAIAAAACAAgMAAAC+UIlYAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAlQTFRFAAAAAAAAAAAAg2PpwAAAAAN0Uk5TAAIBv0eWygAAADdJREFUeJztziEBACAMAEHWgerrgacSIWjAFAbu9YmPVhQAAAAAAAAAAAAA8DDo6wxyjusPH4ANKzEDgZ7ZsS4AAAAASUVORK5CYII=";
     this.oldUserData = {};
   }
 
   updateParticipantCount = async () => {
-    this.DG.voiceChannelInfo.voice_channel_participants = Object.keys(this.DG.currentVoiceUsers).length > 0 ? Object.values(this.DG.currentVoiceUsers).map(user => user.user.username).join("|") : "<None>";
-    this.DG.voiceChannelInfo.voice_channel_participant_ids = Object.keys(this.DG.currentVoiceUsers).length > 0 ? Object.values(this.DG.currentVoiceUsers).map(user => user.user.id).join("|") : "<None>";
+    this.DG.voiceChannelInfo.voice_channel_participants =
+      Object.keys(this.DG.currentVoiceUsers).length > 0
+        ? Object.values(this.DG.currentVoiceUsers)
+            .map((user) => user.user.username)
+            .join("|")
+        : "<None>";
+    this.DG.voiceChannelInfo.voice_channel_participant_ids =
+      Object.keys(this.DG.currentVoiceUsers).length > 0
+        ? Object.values(this.DG.currentVoiceUsers)
+            .map((user) => user.user.id)
+            .join("|")
+        : "<None>";
   };
 
   clearUserStates = async () => {
@@ -30,21 +41,21 @@ class UserStateHandler {
     let userId = data.user.id;
 
     // Initialize user if it doesn't exist
-    if (!this.DG.currentVoiceUsers.hasOwnProperty(userId)) {
+    if (!Object.prototype.hasOwnProperty.call(this.DG.currentVoiceUsers, userId)) {
       logIt("DEBUG", `User ${data.nick} has joined the voice channel`);
       this.updateParticipantCount();
       this.DG.currentVoiceUsers[userId] = {};
     }
-  
+
     const user = this.DG.currentVoiceUsers[userId];
     if (user.base64Avatar === undefined) {
       const avatarUrl = `https://cdn.discordapp.com/avatars/${userId}/${data.user.avatar}.webp?size=128`;
       user.base64Avatar = await imageToBase64(avatarUrl);
     }
-  
+
     this.DG.currentVoiceUsers[userId] = {
       ...data,
-      base64Avatar: user.base64Avatar
+      base64Avatar: user.base64Avatar,
     };
   };
 
@@ -80,7 +91,7 @@ class UserStateHandler {
       updates.push({ id: `${idPrefix}_${userIndex}_avatarID`, value: user.user.avatar });
     }
     return updates;
-}
+  }
 
   updateUserStates = async (data) => {
     try {
@@ -104,10 +115,13 @@ class UserStateHandler {
       let updates = this.generateUserUpdates(userIndex, userDiff);
 
       // Only updating user volume connector/state if volume has changed
-      if (userDiff.hasOwnProperty("volume")) {
+      if (Object.prototype.hasOwnProperty.call(userDiff, "volume")) {
         let newVolume = convertVolumeToPercentage(user.volume) / 2;
-        this.TPClient.connectorUpdate(`discord_voice_volume_action_connector|voiceUserList_connector=${userIndex}`, newVolume);
-        updates.push({ id: `user_${userIndex}_volume`, value: Math.round(newVolume) })
+        this.TPClient.connectorUpdate(
+          `discord_voice_volume_action_connector|voiceUserList_connector=${userIndex}`,
+          newVolume,
+        );
+        updates.push({ id: `user_${userIndex}_volume`, value: Math.round(newVolume) });
       }
 
       // Updating states for general user
@@ -116,7 +130,7 @@ class UserStateHandler {
       }
 
       // Update custom voice activity users if applicable
-      if (this.DG.customVoiceAcivityUsers.hasOwnProperty(userId)) {
+      if (Object.prototype.hasOwnProperty.call(this.DG.customVoiceAcivityUsers, userId)) {
         let customUserIndex = this.DG.customVoiceAcivityUsers[userId];
         let customUpdates = this.generateUserUpdates(customUserIndex, user, "customUser");
         this.TPClient.stateUpdateMany(customUpdates);
@@ -126,7 +140,7 @@ class UserStateHandler {
     }
 
     // Keeping track of previous user data
-    this.oldUserData[data.user.id] = this.DG.currentVoiceUsers[data.user.id]
+    this.oldUserData[data.user.id] = this.DG.currentVoiceUsers[data.user.id];
   };
 
   deleteUserStates = async (data) => {
@@ -159,12 +173,11 @@ class UserStateHandler {
         { id: `${idPrefix}_${userIndex}_nick`, value: user.nick },
         { id: `${idPrefix}_${userIndex}_volume`, value: Math.round(user.volume) },
         { id: `${idPrefix}_${userIndex}_avatar`, value: user.user.base64Avatar },
-        { id: `${idPrefix}_${userIndex}_avatarID`, value: user.user.avatar }
-      ]; 
+        { id: `${idPrefix}_${userIndex}_avatarID`, value: user.user.avatar },
+      ];
       this.TPClient.stateUpdateMany(updates);
     }
   };
 }
 
-
-module.exports = {UserStateHandler};
+module.exports = { UserStateHandler };

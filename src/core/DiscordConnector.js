@@ -1,7 +1,5 @@
-// Discord Connector
-
-const {open} = require("out-url");
-const {logIt, isEmpty} = require("../utils/helpers.js");
+const { open } = require("out-url");
+const { logIt, isEmpty } = require("../utils/helpers.js");
 
 class DiscordConnector {
   constructor(TPClient, DG, RPC, userStateHandler, notificationHandler, voiceStateHandler) {
@@ -11,12 +9,11 @@ class DiscordConnector {
     this.userStateHandler = userStateHandler;
     this.notificationHandler = notificationHandler;
     this.voiceStateHandler = voiceStateHandler;
-    
   }
 
   connectToDiscord = () => {
     try {
-      this.DG.Client = new this.RPC.Client({transport: "ipc"});
+      this.DG.Client = new this.RPC.Client({ transport: "ipc" });
 
       /// how do we initiate this outside of this class... hmm
       // const voiceStateHandler = new VoiceStateHandler(this, this.TPClient, this.userStateHandler, this.notificationHandler);
@@ -64,7 +61,7 @@ class DiscordConnector {
     });
 
   waitForLogin = () =>
-    new Promise((r, j) => {
+    new Promise((r, _j) => {
       this.DG.connecting = true;
       const check = () => {
         if (this.DG.Client && this.DG.Client.user != null) {
@@ -97,20 +94,16 @@ class DiscordConnector {
       isEmpty(this.DG.pluginSettings["Discord Client Id"]) ||
       isEmpty(this.DG.pluginSettings["Discord Client Secret"])
     ) {
-      open(`https://discord.com/developers/applications`);
+      open("https://discord.com/developers/applications");
 
       await this.waitForClientId(30 * 60 * 1000); // wait for 30 minutes
     }
 
     // Start Login process
-    
+
     logIt("INFO", "Waiting for Login");
     await this.waitForLogin();
   };
-
-  
 }
 
-
-
-module.exports = {DiscordConnector};
+module.exports = { DiscordConnector };

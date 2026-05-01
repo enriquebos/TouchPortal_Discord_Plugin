@@ -93,4 +93,4 @@ spanishAlphaChars.split(" ").forEach((char) => {
   keyboard.keyMap[char] = char.charCodeAt(0);
 });
 
-module.exports = {keyboard: keyboard};
+module.exports = { keyboard: keyboard };

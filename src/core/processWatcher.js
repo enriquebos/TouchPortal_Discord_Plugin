@@ -1,14 +1,15 @@
 "use strict";
 
 const EventEmitter = require("events");
-const find = require("find-process");
+const findProcess = require("find-process");
 const path = require("path");
 const { logIt } = require("../utils/helpers");
 const platform = require("process").platform;
 const LOOP_INTERVAL = 10000;
+const find = findProcess.default || findProcess;
 
 class ProcessWatcher extends EventEmitter {
-  constructor(options = {}) {
+  constructor(_options = {}) {
     super();
     this.loop = null;
     this.processNames = {};
@@ -43,10 +44,7 @@ class ProcessWatcher extends EventEmitter {
           return;
         }
         if (list.length > 0) {
-          if (
-            this.processNames[processName] == null ||
-            !this.processNames[processName]["isRunning"]
-          ) {
+          if (this.processNames[processName] == null || !this.processNames[processName]["isRunning"]) {
             this.processNames[processName].isRunning = true;
             emitEvent = true;
           }
@@ -68,5 +66,4 @@ class ProcessWatcher extends EventEmitter {
   }
 }
 
-module.exports = {ProcWatcher:ProcessWatcher};
-
+module.exports = { ProcWatcher: ProcessWatcher };

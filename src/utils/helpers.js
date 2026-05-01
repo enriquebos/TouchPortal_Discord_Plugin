@@ -1,9 +1,7 @@
-// HELPER FUNCTIONS
 const platform = require("process").platform;
-const {pluginId} = require("../discordConfig.js");
-const {discord_paths} = require("../discordPaths.js");
+const { pluginId } = require("../discordConfig.js");
+const { discord_paths } = require("../discordPaths.js");
 let debugMode = "INFO";
-
 
 function setDebugMode(mode) {
   debugMode = mode;
@@ -110,7 +108,6 @@ function createStates(prefix, states, group = `${prefix} - States`, TPClient) {
   }
 }
 
-
 module.exports = {
   logIt,
   isEmpty,
@@ -124,5 +121,5 @@ module.exports = {
   setDebugMode,
   createStates,
   platform,
-  discord_paths
+  discord_paths,
 };

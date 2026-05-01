@@ -15,11 +15,11 @@ class DiscordConfig {
     this.updateUrl = "https://raw.githubusercontent.com/spdermn02/TouchPortal_Discord_Plugin/master/package.json";
     this.releaseUrl = "https://github.com/spdermn02/TouchPortal_Discord_Plugin/releases";
     this.redirectUri = "http://localhost";
-    this.Client = null;            // Discord Client
+    this.Client = null; // Discord Client
     this.accessToken = undefined; // Discord Access Token
     this.connecting = false;
-    this.connected = false;       // using this to make sure no commands are fired unless we are fully connected- did not use this.connecting since it defaults to false,
-                                 //  then turns to true while its connecting, and then back to false.. which would cause issues
+    this.connected = false; // using this to make sure no commands are fired unless we are fully connected- did not use this.connecting since it defaults to false,
+    //  then turns to true while its connecting, and then back to false.. which would cause issues
 
     this.scopes = [
       "identify",
@@ -37,17 +37,17 @@ class DiscordConfig {
 
     this.DEFAULT_USER_STATES = [
       // used on creation of states for each user when plugin first boots
-      {id: "Speaking", title: "Status: isSpeaking", value: "Off"},
-      {id: "id", title: "ID", value: ""},
-      {id: "nick", title: "Nickname", value: ""},
-      {id: "mute", title: "Status: Mute", value: "Off"},
-      {id: "self_mute", title: "Status: Self Mute", value: "Off"},
-      {id: "self_deaf", title: "Status: Self Deaf", value: "Off"},
-      {id: "deaf", title: "Status: Deafen", value: "Off"},
-      {id: "volume", title: "Volume", value: "0"},
-      {id: "avatar", title: "Avatar", value: ""},
-      {id: "avatarID", title: "Avatar ID", value: ""},
-      {id: "server_mute", title: "Status: Server Mute", value: "Off"},
+      { id: "Speaking", title: "Status: isSpeaking", value: "Off" },
+      { id: "id", title: "ID", value: "" },
+      { id: "nick", title: "Nickname", value: "" },
+      { id: "mute", title: "Status: Mute", value: "Off" },
+      { id: "self_mute", title: "Status: Self Mute", value: "Off" },
+      { id: "self_deaf", title: "Status: Self Deaf", value: "Off" },
+      { id: "deaf", title: "Status: Deafen", value: "Off" },
+      { id: "volume", title: "Volume", value: "0" },
+      { id: "avatar", title: "Avatar", value: "" },
+      { id: "avatarID", title: "Avatar ID", value: "" },
+      { id: "server_mute", title: "Status: Server Mute", value: "Off" },
     ];
 
     this.voiceSettings = {
@@ -87,7 +87,7 @@ class DiscordConfig {
       speaker_volume_connector: "0",
     };
 
-    this.currentVoiceUsers = {};        // The Current People in Voice Chat
+    this.currentVoiceUsers = {}; // The Current People in Voice Chat
     this.customVoiceAcivityUsers = {};
 
     this.guilds = {};
@@ -98,7 +98,6 @@ class DiscordConfig {
     this.pttKeyStateId = "discordPTTKeyboardKey";
 
     this.instanceIds = {};
-
   }
 }
 

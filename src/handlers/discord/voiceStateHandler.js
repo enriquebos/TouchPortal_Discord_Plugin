@@ -1,18 +1,16 @@
 // voiceStateHandler
 
-
-const {logIt, diff, convertVolumeToPercentage, convertPercentageToVolume, platform, discord_paths} = require("../../utils/helpers.js");
-
+const { logIt, diff, convertVolumeToPercentage, platform, discord_paths } = require("../../utils/helpers.js");
 
 class VoiceStateHandler {
-  constructor(DG,  TPClient, userStateHandler, notificationHandler, voiceChannelHandler, procWatcher) {
+  constructor(DG, TPClient, userStateHandler, notificationHandler, voiceChannelHandler, procWatcher) {
     this.TPClient = TPClient;
-    this.DG = DG
+    this.DG = DG;
     this.userStateHandler = userStateHandler;
     this.voiceChannelHandler = voiceChannelHandler;
     this.doLogin = null;
-    this.processNames = procWatcher.processNames; // this is from procWatcher for us to set processName to false when disconnected.. 
-                                          // this is a bit of a 'hack' for when user disconnects from a update on discord
+    this.processNames = procWatcher.processNames; // this is from procWatcher for us to set processName to false when disconnected..
+    // this is a bit of a 'hack' for when user disconnects from a update on discord
 
     // not using?
     // this.repopulateUserStates = this.userStateHandler.repopulateUserStates;
@@ -24,7 +22,7 @@ class VoiceStateHandler {
 
   initiate_doLogin = (doLogin) => {
     this.doLogin = doLogin;
-  }
+  };
 
   registerEvents = () => {
     this.DG.Client.on("ready", async () => {
@@ -71,22 +69,21 @@ class VoiceStateHandler {
       await this.DG.Client.subscribe("CURRENT_USER_UPDATE").catch((err) => {
         logIt("ERROR", err);
       });
-      
-      // how to maybe get thread create events? 
+
+      // how to maybe get thread create events?
       // https://github.com/Wumpus-Central/discrapper-canary/blob/75f0797775371f774081fa60b661b55afe880e76/chunks/218315.js#L36
-      
 
       await this.getGuilds();
       await this.getSoundboardSounds();
-    }); 
+    });
 
-    // If user changes their name,a vatar, premium_type... 
+    // If user changes their name,a vatar, premium_type...
     this.DG.Client.on("CURRENT_USER_UPDATE", (data) => {
       logIt("DEBUG", "Current User Update", JSON.stringify(data));
-      let userId = data.id;
-      let userName = data.username; // or global_name ?
-      let userPremiumType = data.premium_type;
-      let userAvatar = data.avatar;
+      // let userId = data.id;
+      // let userName = data.username; // or global_name ?
+      // let userPremiumType = data.premium_type;
+      // let userAvatar = data.avatar;
 
       this.DG.userID = data.id;
       this.DG.userPremiumType = data.premium_type;
@@ -157,12 +154,12 @@ class VoiceStateHandler {
       logIt("WARN", "discord connection closed, will attempt reconnect, once process detected");
       this.TPClient.settingUpdate("Plugin Connected", "Disconnected");
       this.TPClient.stateUpdate("discord_connected", "Disconnected");
-      
+
       this.DG.connected = false;
 
       // setting procWatcher processNames to false so we can force it to try to reconnect
       this.processNames[discord_paths[platform]]["isRunning"] = false;
-      
+
       if (platform != "win32" || this.DG.pluginSettings["Skip Process Watcher"].toLowerCase() == "yes") {
         return this.doLogin();
       }
@@ -171,7 +168,7 @@ class VoiceStateHandler {
 
   async voiceState(event, data) {
     logIt("DEBUG", "Voice State", event, JSON.stringify(data));
-    let ids = [];
+    // let ids = [];
 
     if (event === "create") {
       if (data.user.id !== this.DG.Client.user.id) {
@@ -196,7 +193,9 @@ class VoiceStateHandler {
 
   handleSpeakingEvent(event, data) {
     let userId = data.user_id;
-    if (this.DG.currentVoiceUsers.hasOwnProperty(userId)) {
+    // logIt("INFO", "Test");
+    // Vine boom 1464809420654645288 1352422295402057759
+    if (Object.prototype.hasOwnProperty.call(this.DG.currentVoiceUsers, userId)) {
       const isSpeaking = event === "speaking";
 
       this.DG.currentVoiceUsers[userId].speaking = isSpeaking;
@@ -206,45 +205,42 @@ class VoiceStateHandler {
 
       // Check if user in custom watch list..
 
-      if (this.DG.customVoiceAcivityUsers.hasOwnProperty(userId)) {
+      if (Object.prototype.hasOwnProperty.call(this.DG.customVoiceAcivityUsers, userId)) {
         // console.log("User exists");
-        this.TPClient.stateUpdate(
-          `${this.DG.customVoiceAcivityUsers[userId]}_Speaking`,
-          isSpeaking ? "On" : "Off"
-        );
+        this.TPClient.stateUpdate(`${this.DG.customVoiceAcivityUsers[userId]}_Speaking`, isSpeaking ? "On" : "Off");
       }
 
-      logIt(
-        "INFO",
-        this.DG.currentVoiceUsers[userId].nick,
-        isSpeaking ? "started speaking" : "stopped speaking"
-      );
+      logIt("INFO", this.DG.currentVoiceUsers[userId].nick, isSpeaking ? "started speaking" : "stopped speaking");
     }
   }
 
-
   handleDeviceChange(type, data) {
-    if (data.hasOwnProperty(type)) {
+    if (Object.prototype.hasOwnProperty.call(data, type)) {
       logIt("INFO", `Default ${type} device has changed.`);
-      
-      const devicesArray = Array.isArray(data[type].available_devices) 
+
+      const devicesArray = Array.isArray(data[type].available_devices)
         ? data[type].available_devices
         : Object.values(data[type].available_devices);
-        
-      if (devicesArray.length > 0 && devicesArray.some(device => device.id && device.name)) {
+
+      if (devicesArray.length > 0 && devicesArray.some((device) => device.id && device.name)) {
         // This is when we startup and get a full array of devices
         logIt("DEBUG", `Available ${type} devices:`, devicesArray);
-    
+
         this.DG.voiceSettings[`${type}Devices`] = devicesArray;
-        this.DG.voiceSettings[`${type}DeviceNames`] = devicesArray.map(device => device.name);
+        this.DG.voiceSettings[`${type}DeviceNames`] = devicesArray.map((device) => device.name);
         this.DG.voiceSettings[`${type}DeviceVolume`] = data[type].volume;
         this.DG.voiceSettings[`${type}DeviceId`] = data[type].device_id;
-    
-        const matchedDevice = this.DG.voiceSettings[`${type}Devices`].find(device => device.id === this.DG.voiceSettings[`${type}DeviceId`]);
-    
+
+        const matchedDevice = this.DG.voiceSettings[`${type}Devices`].find(
+          (device) => device.id === this.DG.voiceSettings[`${type}DeviceId`],
+        );
+
         if (matchedDevice) {
           this.TPClient.stateUpdate(`discord_${type}Device`, matchedDevice.name);
-          this.TPClient.stateUpdate(`discord_default_audio_device_change_eventState`, `${type.charAt(0).toUpperCase() + type.slice(1)}`);
+          this.TPClient.stateUpdate(
+            "discord_default_audio_device_change_eventState",
+            `${type.charAt(0).toUpperCase() + type.slice(1)}`,
+          );
 
           logIt("DEBUG", `${type.charAt(0).toUpperCase() + type.slice(1)} Device:`, matchedDevice.name);
         } else {
@@ -254,17 +250,21 @@ class VoiceStateHandler {
         // This is when we are already started and the array is empty
         this.DG.voiceSettings[`${type}DeviceId`] = data[type].device_id;
         this.DG.voiceSettings[`${type}DeviceVolume`] = data[type].volume;
-    
-        const matchedDevice = this.DG.voiceSettings[`${type}Devices`].find(device => device.id === this.DG.voiceSettings[`${type}DeviceId`]);
+
+        const matchedDevice = this.DG.voiceSettings[`${type}Devices`].find(
+          (device) => device.id === this.DG.voiceSettings[`${type}DeviceId`],
+        );
         if (matchedDevice) {
           this.TPClient.stateUpdate(`discord_${type}Device`, matchedDevice.name);
-          this.TPClient.stateUpdate(`discord_default_audio_device_change_eventState`, `${type.charAt(0).toUpperCase() + type.slice(1)}`);
+          this.TPClient.stateUpdate(
+            "discord_default_audio_device_change_eventState",
+            `${type.charAt(0).toUpperCase() + type.slice(1)}`,
+          );
         }
         logIt("DEBUG", `Using ${type} device ID:`, this.DG.voiceSettings[`${type}DeviceId`]);
       }
 
-      this.TPClient.stateUpdate(`discord_default_audio_device_change_eventState`, ``);
-
+      this.TPClient.stateUpdate("discord_default_audio_device_change_eventState", "");
     } else {
       logIt("INFO", `No ${type} device data found.`);
     }
@@ -276,17 +276,23 @@ class VoiceStateHandler {
     // // We always need these
     data.mute = newData.mute;
     data.deaf = newData.deaf;
- 
+
     const states = [];
     const connectors = [];
 
-    if (data.hasOwnProperty('input') && data.input.hasOwnProperty('device_id')) {
-      this.handleDeviceChange('input', data);
+    if (
+      Object.prototype.hasOwnProperty.call(data, "input") &&
+      Object.prototype.hasOwnProperty.call(data.input, "device_id")
+    ) {
+      this.handleDeviceChange("input", data);
     }
-    if (data.hasOwnProperty('output') && data.output.hasOwnProperty('device_id')) {      
-      this.handleDeviceChange('output', data);
+    if (
+      Object.prototype.hasOwnProperty.call(data, "output") &&
+      Object.prototype.hasOwnProperty.call(data.output, "device_id")
+    ) {
+      this.handleDeviceChange("output", data);
     }
-    if (data.hasOwnProperty("mute") && data.mute !== this.prevMuteState) {
+    if (Object.prototype.hasOwnProperty.call(data, "mute") && data.mute !== this.prevMuteState) {
       if (data.mute) {
         this.DG.voiceSettings.muteState = 1;
       } else {
@@ -299,7 +305,7 @@ class VoiceStateHandler {
       states.push({ id: "discord_mute", value: this.DG.voiceSettings.muteState ? "On" : "Off" });
     }
 
-    if (data.hasOwnProperty("deaf") && data.deaf !== this.prevDeafState) {
+    if (Object.prototype.hasOwnProperty.call(data, "deaf") && data.deaf !== this.prevDeafState) {
       if (data.deaf) {
         this.DG.voiceSettings.deafState = 1;
         this.DG.voiceSettings.muteState = 1; // Deafening also mutes
@@ -310,52 +316,78 @@ class VoiceStateHandler {
           this.DG.voiceSettings.muteState = 0;
         }
       }
-      states.push({id: "discord_deafen", value: this.DG.voiceSettings.deafState ? "On" : "Off"});
-      states.push({id: "discord_mute", value: this.DG.voiceSettings.muteState ? "On" : "Off"});
+      states.push({ id: "discord_deafen", value: this.DG.voiceSettings.deafState ? "On" : "Off" });
+      states.push({ id: "discord_mute", value: this.DG.voiceSettings.muteState ? "On" : "Off" });
       logIt("DEBUG", `discord deafen is ${this.DG.voiceSettings.deafState}`);
     }
 
-    if ( data.hasOwnProperty("input") && data.input.hasOwnProperty("volume") && data.input.volume > -1) {
+    if (
+      Object.prototype.hasOwnProperty.call(data, "input") &&
+      Object.prototype.hasOwnProperty.call(data.input, "volume") &&
+      data.input.volume > -1
+    ) {
       this.DG.voiceChannelInfo.voice_volume = convertVolumeToPercentage(data.input.volume);
-      states.push({id: "discord_voice_volume", value: this.DG.voiceChannelInfo.voice_volume});
-      connectors.push({ id: "discord_voice_volume_connector", value: this.DG.voiceChannelInfo.voice_volume});
+      states.push({ id: "discord_voice_volume", value: this.DG.voiceChannelInfo.voice_volume });
+      connectors.push({ id: "discord_voice_volume_connector", value: this.DG.voiceChannelInfo.voice_volume });
     }
     if (
-      data.hasOwnProperty("output") && data.output.hasOwnProperty("volume") && data.output.volume > -1) {
+      Object.prototype.hasOwnProperty.call(data, "output") &&
+      Object.prototype.hasOwnProperty.call(data.output, "volume") &&
+      data.output.volume > -1
+    ) {
       this.DG.voiceChannelInfo.speaker_volume = convertVolumeToPercentage(data.output.volume);
       this.DG.voiceChannelInfo.speaker_volume_connector = Math.round(convertVolumeToPercentage(data.output.volume) / 2);
-      states.push({id: "discord_speaker_volume", value: this.DG.voiceChannelInfo.speaker_volume});
-      connectors.push({ id: "discord_speaker_volume_connector", value: this.DG.voiceChannelInfo.speaker_volume_connector,});
-    }
-    if (data.hasOwnProperty("mode") && data.mode.hasOwnProperty("type") && data.mode.type != "") {
-      this.DG.voiceSettings.voice_mode_type = data.mode.type;
-      states.push({id: "discord_voice_mode_type", value: this.DG.voiceSettings.voice_mode_type});
+      states.push({ id: "discord_speaker_volume", value: this.DG.voiceChannelInfo.speaker_volume });
+      connectors.push({
+        id: "discord_speaker_volume_connector",
+        value: this.DG.voiceChannelInfo.speaker_volume_connector,
+      });
     }
     if (
-      data.hasOwnProperty("automatic_gain_control") ||
-      data.hasOwnProperty("automaticGainControl")
+      Object.prototype.hasOwnProperty.call(data, "mode") &&
+      Object.prototype.hasOwnProperty.call(data.mode, "type") &&
+      data.mode.type != ""
+    ) {
+      this.DG.voiceSettings.voice_mode_type = data.mode.type;
+      states.push({ id: "discord_voice_mode_type", value: this.DG.voiceSettings.voice_mode_type });
+    }
+    if (
+      Object.prototype.hasOwnProperty.call(data, "automatic_gain_control") ||
+      Object.prototype.hasOwnProperty.call(data, "automaticGainControl")
     ) {
       this.DG.voiceSettings.automatic_gain_control = data.automatic_gain_control || data.automaticGainControl ? 1 : 0;
-      states.push({ id: "discord_automatic_gain_control", value: this.DG.voiceSettings.automatic_gain_control ? "On" : "Off"});
+      states.push({
+        id: "discord_automatic_gain_control",
+        value: this.DG.voiceSettings.automatic_gain_control ? "On" : "Off",
+      });
     }
-    if (data.hasOwnProperty("noise_suppression") || data.hasOwnProperty("noiseSuppression")) {
+    if (
+      Object.prototype.hasOwnProperty.call(data, "noise_suppression") ||
+      Object.prototype.hasOwnProperty.call(data, "noiseSuppression")
+    ) {
       this.DG.voiceSettings.noise_suppression = data.noise_suppression || data.noiseSuppression ? 1 : 0;
-      states.push({ id: "discord_noise_suppression", value: this.DG.voiceSettings.noise_suppression ? "On" : "Off"});
+      states.push({ id: "discord_noise_suppression", value: this.DG.voiceSettings.noise_suppression ? "On" : "Off" });
     }
-    if (data.hasOwnProperty("echo_cancellation") || data.hasOwnProperty("echoCancellation")) {
+    if (
+      Object.prototype.hasOwnProperty.call(data, "echo_cancellation") ||
+      Object.prototype.hasOwnProperty.call(data, "echoCancellation")
+    ) {
       this.DG.voiceSettings.echo_cancellation = data.echo_cancellation || data.echoCancellation ? 1 : 0;
-      states.push({id: "discord_echo_cancellation", value: this.DG.voiceSettings.echo_cancellation ? "On" : "Off" });
+      states.push({ id: "discord_echo_cancellation", value: this.DG.voiceSettings.echo_cancellation ? "On" : "Off" });
     }
-    if (data.hasOwnProperty("silence_warning") || data.hasOwnProperty("silenceWarning")) {
+    if (
+      Object.prototype.hasOwnProperty.call(data, "silence_warning") ||
+      Object.prototype.hasOwnProperty.call(data, "silenceWarning")
+    ) {
       this.DG.voiceSettings.silence_warning = data.silence_warning || data.silenceWarning ? 1 : 0;
       states.push({
         id: "discord_silence_warning",
         value: this.DG.voiceSettings.silence_warning ? "On" : "Off",
       });
     }
-    if (data.hasOwnProperty("qos") || data.hasOwnProperty("qos")) {
+    if (Object.prototype.hasOwnProperty.call(data, "qos") || Object.prototype.hasOwnProperty.call(data, "qos")) {
       this.DG.voiceSettings.qos_priority = data.qos ? 1 : 0;
-      states.push({id: "discord_qos_priority",value: this.DG.voiceSettings.qos_priority ? "On" : "Off"});
+      states.push({ id: "discord_qos_priority", value: this.DG.voiceSettings.qos_priority ? "On" : "Off" });
     }
 
     if (states.length > 0) {
@@ -366,7 +398,6 @@ class VoiceStateHandler {
     }
 
     this.DG.voiceSettings.prevVoiceActivityData = newData;
-
   };
 
   voiceConnectionStatus = async (data) => {
@@ -384,16 +415,15 @@ class VoiceStateHandler {
       this.DG.voiceChannelInfo.voice_channel_participants = "<None>";
     }
     let states = [
-      {id: "discord_voice_channel_connected", value: this.DG.voiceChannelInfo.voice_channel_connected},
-      {id: "discord_voice_average_ping", value: this.DG.voiceChannelInfo.voice_average_ping},
-      {id: "discord_voice_hostname", value: this.DG.voiceChannelInfo.voice_hostname},
-      {id: "discord_voice_channel_name", value: this.DG.voiceChannelInfo.voice_channel_name},
-      {id: "discord_voice_channel_id", value: this.DG.voiceChannelInfo.voice_channel_id},
-      {id: "discord_voice_channel_server_name", value: this.DG.voiceChannelInfo.voice_channel_server_name},
-      {id: "discord_voice_channel_server_id", value: this.DG.voiceChannelInfo.voice_channel_server_id},
-      {id: "discord_voice_channel_participants", value: this.DG.voiceChannelInfo.voice_channel_participants},
-      {id: "discord_voice_channel_participant_ids", value: this.DG.voiceChannelInfo.voice_channel_participant_ids}
-      
+      { id: "discord_voice_channel_connected", value: this.DG.voiceChannelInfo.voice_channel_connected },
+      { id: "discord_voice_average_ping", value: this.DG.voiceChannelInfo.voice_average_ping },
+      { id: "discord_voice_hostname", value: this.DG.voiceChannelInfo.voice_hostname },
+      { id: "discord_voice_channel_name", value: this.DG.voiceChannelInfo.voice_channel_name },
+      { id: "discord_voice_channel_id", value: this.DG.voiceChannelInfo.voice_channel_id },
+      { id: "discord_voice_channel_server_name", value: this.DG.voiceChannelInfo.voice_channel_server_name },
+      { id: "discord_voice_channel_server_id", value: this.DG.voiceChannelInfo.voice_channel_server_id },
+      { id: "discord_voice_channel_participants", value: this.DG.voiceChannelInfo.voice_channel_participants },
+      { id: "discord_voice_channel_participant_ids", value: this.DG.voiceChannelInfo.voice_channel_participant_ids },
     ];
     this.TPClient.stateUpdateMany(states);
   };
@@ -458,7 +488,7 @@ class VoiceStateHandler {
     }
   };
 
-  assignGuildIndex = async (guild, counter) => {
+  assignGuildIndex = async (guild, _counter) => {
     this.DG.guilds.array.push(guild.name);
     this.DG.guilds.idx[guild.name] = guild.id;
     this.DG.guilds.idx[guild.id] = guild.name;
@@ -467,7 +497,6 @@ class VoiceStateHandler {
     // -- Done... to limit having to do this timeout thingy
     await this.buildGuildChannelIndex(guild.id);
   };
-
 
   buildGuildChannelIndex = async (guildId) => {
     let chData = await this.getGuildChannels(guildId);
@@ -498,7 +527,7 @@ class VoiceStateHandler {
     await Promise.all(
       chData.map(async (channel) => {
         this.assignChannelIndex(guildId, channel);
-      })
+      }),
     );
   };
 
@@ -509,7 +538,7 @@ class VoiceStateHandler {
     }
 
     // Type 0 is Text channel, 2 is Voice channel, 5 is Announcement Channels
-    if (channel.type == 0 ) {
+    if (channel.type == 0) {
       this.DG.channels[guildId].text.array.push(channel.name);
       this.DG.channels[guildId].text.idx[channel.name] = channel.id;
       this.DG.channels[guildId].text.names[channel.id] = channel.name;
@@ -538,12 +567,12 @@ class VoiceStateHandler {
         idx: {},
         default: {
           array: [],
-          idx: {}
+          idx: {},
         },
         nonDefault: {
           array: [],
-          idx: {}
-        }
+          idx: {},
+        },
       };
 
       // Process each sound
@@ -567,23 +596,22 @@ class VoiceStateHandler {
         this.DG.soundBoard.array.push(soundName);
         this.DG.soundBoard.idx[soundName] = sound;
         this.DG.soundBoard.idx[sound.sound_id] = sound;
-    }
+      }
 
-   // Adding a random sound feature.. 
-   this.DG.soundBoard.default.array.push("RANDOM SOUND")
-   this.DG.soundBoard.array.push("RANDOM SOUND")
+      // Adding a random sound feature..
+      this.DG.soundBoard.default.array.push("RANDOM SOUND");
+      this.DG.soundBoard.array.push("RANDOM SOUND");
 
-   this.DG.soundBoard.array.sort();
-   this.DG.soundBoard.default.array.sort();
- 
-  if (this.DG.userPremiumType === 0) {
-    this.TPClient.choiceUpdate("discordSound", this.DG.soundBoard.default.array);
-    logIt("DEBUG", "User is not premium, default sounds only");
-  } else
-    this.TPClient.choiceUpdate("discordSound", this.DG.soundBoard.array);
-    logIt("DEBUG", "User is premium, all sounds available");
+      this.DG.soundBoard.array.sort();
+      this.DG.soundBoard.default.array.sort();
+
+      if (this.DG.userPremiumType === 0) {
+        this.TPClient.choiceUpdate("discordSound", this.DG.soundBoard.default.array);
+        logIt("DEBUG", "User is not premium, default sounds only");
+      } else this.TPClient.choiceUpdate("discordSound", this.DG.soundBoard.array);
+      logIt("DEBUG", "User is premium, all sounds available");
     }
   };
 }
 
-module.exports = {VoiceStateHandler};
+module.exports = { VoiceStateHandler };

@@ -39,7 +39,6 @@ async function onAction(message, isHeld, DG) {
     if (message.actionId === "discord_leave_channel") {
       await DG.Client.selectVoiceChannel(null, { timeout: 5 });
     }
-
   } else if (message.actionId === "discord_setActivity") {
     let activityType = message.data[0].value;
     let activityDetails = message.data[1].value;
@@ -78,7 +77,6 @@ async function onAction(message, isHeld, DG) {
     // }
 
     await DG.Client.setActivity(activity);
-
   } else if (message.actionId === "discord_play_sound") {
     let soundValue = message.data[0].value;
     let sound;
@@ -89,13 +87,13 @@ async function onAction(message, isHeld, DG) {
       // Picking a random sound based on user PremiumType
       if (DG.userPremiumType === 0) {
         // Filtering out the "RANDOM SOUND" choice before picking a random sound
-        availableSounds = DG.soundBoard.default.array.filter(soundName => soundName !== "RANDOM SOUND");
+        const availableSounds = DG.soundBoard.default.array.filter((soundName) => soundName !== "RANDOM SOUND");
         randomIndex = Math.floor(Math.random() * availableSounds.length);
         randomSoundName = availableSounds[randomIndex];
         sound = DG.soundBoard.default.idx[randomSoundName];
       } else {
         // Filtering out the "RANDOM SOUND" choice before picking a random sound
-        availableSounds = DG.soundBoard.array.filter(soundName => soundName !== "RANDOM SOUND");
+        const availableSounds = DG.soundBoard.array.filter((soundName) => soundName !== "RANDOM SOUND");
         randomIndex = Math.floor(Math.random() * availableSounds.length);
         randomSoundName = availableSounds[randomIndex];
         sound = DG.soundBoard.idx[randomSoundName];
@@ -105,16 +103,20 @@ async function onAction(message, isHeld, DG) {
       sound = DG.soundBoard.idx[soundValue];
     }
     try {
+      // logIt("INFO", `${sound.name} ${sound.sound_id} ${sound.guild_id}`);
       await DG.Client.playSoundboardSound(sound.name, sound.sound_id, sound.guild_id);
     } catch (err) {
       logIt("ERROR", `Playing a sound failed: ${err}`);
     }
-
   } else if (message.actionId === "discord_toggle_camera") {
     await DG.Client.toggleVideo();
   } else if (message.actionId == "discord_toggle_screenshare") {
     await DG.Client.toggleScreenshare();
-  } else if (message.actionId === "discord_dm_voice_select" || message.actionId === "discord_dm_text_select" || message.actionId === "discord_select_channel_custom") {
+  } else if (
+    message.actionId === "discord_dm_voice_select" ||
+    message.actionId === "discord_dm_text_select" ||
+    message.actionId === "discord_select_channel_custom"
+  ) {
     let channelId = message.data[0].value;
     let channelType;
     if (message.actionId === "discord_dm_voice_select") {
@@ -139,7 +141,6 @@ async function onAction(message, isHeld, DG) {
         logIt("DEBUG", `Select Text/DM Channel: ${error}`);
       }
     }
-
   } else if (message.actionId === "discord_hangup_voice") {
     DG.Client.selectVoiceChannel(null, { timeout: 5 });
   } else if (message.actionId === "discord_reset_push_to_talk_key") {
@@ -179,7 +180,7 @@ async function onAction(message, isHeld, DG) {
     // Is user in our custom list of users?
     if (Object.values(DG.customVoiceAcivityUsers).includes(message.data[1].value)) {
       userId = Object.keys(DG.customVoiceAcivityUsers).find(
-        (key) => DG.customVoiceAcivityUsers[key] === message.data[1].value
+        (key) => DG.customVoiceAcivityUsers[key] === message.data[1].value,
       );
     } else {
       userId = getUserIdFromIndex(message.data[1].value, DG.currentVoiceUsers);
@@ -208,11 +209,9 @@ async function onAction(message, isHeld, DG) {
       if (isHeld === false) {
         clearInterval(intervalId);
       }
-
     } else {
       logIt("WARN", "User not found for volume action", JSON.stringify(message));
     }
-
   } else if (message.actionId === "discord_setDefaultAudioDevice_volume") {
     let deviceType = message.data[0].value;
     let volume;
@@ -224,7 +223,6 @@ async function onAction(message, isHeld, DG) {
         DG.voiceSettings.inputDeviceVolume += parseInt(message.data[1].value, 10);
         DG.voiceSettings.inputDeviceVolume = Math.max(0, Math.min(DG.voiceSettings.inputDeviceVolume, 100));
         volume = DG.voiceSettings.inputDeviceVolume;
-
       } else if (deviceType === "Output") {
         DG.voiceSettings.outputDeviceVolume += parseInt(message.data[1].value, 10);
         DG.voiceSettings.outputDeviceVolume = Math.max(0, Math.min(DG.voiceSettings.outputDeviceVolume, 200));
@@ -232,7 +230,7 @@ async function onAction(message, isHeld, DG) {
       }
 
       const voiceSettings = {
-        [deviceType.toLowerCase()]: { volume: convertPercentageToVolume(volume) }
+        [deviceType.toLowerCase()]: { volume: convertPercentageToVolume(volume) },
       };
 
       try {
@@ -242,13 +240,11 @@ async function onAction(message, isHeld, DG) {
       } catch (error) {
         logIt("ERROR", `Error setting ${deviceType} volume:`, error);
       }
-    }
-
+    };
 
     if (isHeld === undefined || isHeld === null) {
       adjustDeviceVolume(deviceType, message, isHeld);
     }
-
 
     if (isHeld) {
       intervalId = setInterval(() => {
@@ -259,8 +255,6 @@ async function onAction(message, isHeld, DG) {
     if (isHeld === false) {
       clearInterval(intervalId);
     }
-
-
   } else if (message.actionId === "discord_setDefaultAudioDevice") {
     let deviceName = message.data[0].value;
     let deviceType = message.data[1].value;
@@ -287,22 +281,19 @@ async function onAction(message, isHeld, DG) {
         DG.Client.setVoiceSettings({
           input: {
             device: deviceID,
-          }
-        })
+          },
+        });
       } else if (deviceType === "Output") {
         logIt("DEBUG", "Attempting to set output device to", deviceID);
         DG.Client.setVoiceSettings({
           output: {
             device: deviceID,
-          }
-        })
+          },
+        });
       }
-
     } else {
       console.error("Device ID not found for device name:", deviceName);
     }
-
-
   } else if (message.data && message.data.length > 0) {
     if (message.data[0].id === "discordDeafenAction") {
       // maintaining backwards compatibility if message.data[1] doesn't exist, for old discord pages with deafen buttons..
@@ -330,7 +321,7 @@ async function onAction(message, isHeld, DG) {
         // Is user in our custom list of users?
         if (Object.values(DG.customVoiceAcivityUsers).includes(message.data[1].value)) {
           userId = Object.keys(DG.customVoiceAcivityUsers).find(
-            (key) => DG.customVoiceAcivityUsers[key] === message.data[1].value
+            (key) => DG.customVoiceAcivityUsers[key] === message.data[1].value,
           );
         } else {
           userId = getUserIdFromIndex(message.data[1].value, DG.currentVoiceUsers);
@@ -344,19 +335,25 @@ async function onAction(message, isHeld, DG) {
         }
       }
     } else if (message.data[0].id === "discordEchoCancellationAction") {
-      DG.voiceSettings.echo_cancellation = setStateBasedOnValue(message.data[0].value, DG.voiceSettings.echo_cancellation);
+      DG.voiceSettings.echo_cancellation = setStateBasedOnValue(
+        message.data[0].value,
+        DG.voiceSettings.echo_cancellation,
+      );
       DG.Client.setVoiceSettings({
         echoCancellation: 1 === DG.voiceSettings.echo_cancellation,
       });
     } else if (message.data[0].id === "discordNoiseSuppressionAction") {
-      DG.voiceSettings.noise_suppression = setStateBasedOnValue(message.data[0].value, DG.voiceSettings.noise_suppression);
+      DG.voiceSettings.noise_suppression = setStateBasedOnValue(
+        message.data[0].value,
+        DG.voiceSettings.noise_suppression,
+      );
       DG.Client.setVoiceSettings({
         noiseSuppression: 1 === DG.voiceSettings.noise_suppression,
       });
     } else if (message.data[0].id === "discordAutomaticGainControlAction") {
       DG.voiceSettings.automatic_gain_control = setStateBasedOnValue(
         message.data[0].value,
-        DG.voiceSettings.automatic_gain_control
+        DG.voiceSettings.automatic_gain_control,
       );
       DG.Client.setVoiceSettings({
         automaticGainControl: 1 === DG.voiceSettings.automatic_gain_control,
