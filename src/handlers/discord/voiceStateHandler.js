@@ -18,6 +18,7 @@ class VoiceStateHandler {
 
     this.prevMuteState = this.DG.voiceSettings.prevVoiceActivityData.mute;
     this.prevDeafState = this.DG.voiceSettings.prevVoiceActivityData.deaf;
+    this.hasPlayedBeforeStopping = false;
   }
 
   initiate_doLogin = (doLogin) => {
@@ -103,23 +104,33 @@ class VoiceStateHandler {
 
     // should these events be pushed into their own file or remain here?
     this.DG.Client.on("VOICE_STATE_CREATE", (data) => {
-      this.voiceState("create", data);
+      this.voiceState("create", data).catch((err) => {
+        logIt("ERROR", err);
+      });
     });
 
     this.DG.Client.on("VOICE_STATE_UPDATE", (data) => {
-      this.voiceState("update", data);
+      this.voiceState("update", data).catch((err) => {
+        logIt("ERROR", err);
+      });
     });
 
     this.DG.Client.on("VOICE_STATE_DELETE", (data) => {
-      this.voiceState("delete", data);
+      this.voiceState("delete", data).catch((err) => {
+        logIt("ERROR", err);
+      });
     });
 
     this.DG.Client.on("SPEAKING_START", (data) => {
-      this.voiceState("speaking", data);
+      this.voiceState("speaking", data).catch((err) => {
+        logIt("ERROR", err);
+      });
     });
 
     this.DG.Client.on("SPEAKING_STOP", (data) => {
-      this.voiceState("stop_speaking", data);
+      this.voiceState("stop_speaking", data).catch((err) => {
+        logIt("ERROR", err);
+      });
     });
 
     this.DG.Client.on("VOICE_SETTINGS_UPDATE", (data) => {
@@ -181,7 +192,7 @@ class VoiceStateHandler {
     }
 
     if (event === "speaking" || event === "stop_speaking") {
-      this.handleSpeakingEvent(event, data);
+      await this.handleSpeakingEvent(event, data);
     }
 
     if (event === "update") {
@@ -191,7 +202,7 @@ class VoiceStateHandler {
     }
   }
 
-  handleSpeakingEvent(event, data) {
+  async handleSpeakingEvent(event, data) {
     let userId = data.user_id;
     // logIt("INFO", "Test");
     // Vine boom 1464809420654645288 1352422295402057759
@@ -209,6 +220,18 @@ class VoiceStateHandler {
         // console.log("User exists");
         this.TPClient.stateUpdate(`${this.DG.customVoiceAcivityUsers[userId]}_Speaking`, isSpeaking ? "On" : "Off");
       }
+
+      // if (this.DG.currentVoiceUsers[userId].nick === "Lampje") {
+      //   if (!this.hasPlayedBeforeStopping) {
+      //     await this.DG.Client.playSoundboardSound("Vine boom", "1464809420654645288", "1352422295402057759");
+      //     logIt("INFO", "Triggered");
+      //     this.hasPlayedBeforeStopping = true;
+      //   }
+
+      //   if (!isSpeaking) {
+      //     this.hasPlayedBeforeStopping = false;
+      //   }
+      // }
 
       logIt("INFO", this.DG.currentVoiceUsers[userId].nick, isSpeaking ? "started speaking" : "stopped speaking");
     }
@@ -559,9 +582,9 @@ class VoiceStateHandler {
   };
 
   getSoundboardSounds = async () => {
-    let sounds = await this.DG.Client.getSoundboardSounds();
+    const sounds = await this.DG.Client.getSoundboardSounds();
+
     if (sounds != null) {
-      // Initialize soundboard structure
       this.DG.soundBoard = {
         array: [],
         idx: {},
@@ -575,41 +598,22 @@ class VoiceStateHandler {
         },
       };
 
-      // Process each sound
       for (const sound of sounds) {
-        let emojiName = sound.emoji_name ? sound.emoji_name + " - " : "";
-        let guildName = sound.guild_id === "DEFAULT" ? "Discord Sounds" : this.DG.guilds.idx[sound.guild_id];
-        let soundName = guildName + " - " + emojiName + sound.name;
+        if (sound.available) {
+          let emojiName = sound.emoji_name ? sound.emoji_name + " - " : "";
+          let guildName = sound.guild_id === "0" ? "Discord Sounds" : this.DG.guilds.idx[sound.guild_id];
+          let soundName = guildName + " - " + emojiName + sound.name;
 
-        logIt("DEBUG", `Processing Sound: ${soundName}, Guild: ${guildName}`);
-
-        // Determine if the sound is default or non-default
-        // If user_id is found and it matches the user_Id then they created that sound in their server and they can use it without premium..
-        if (sound.guild_id === "DEFAULT" || sound.user_id === this.DG.userID) {
-          // Add to default sounds
-          logIt("DEBUG", `Adding to default: ${soundName}`);
-          this.DG.soundBoard.default.array.push(soundName);
-          this.DG.soundBoard.default.idx[soundName] = sound;
+          this.DG.soundBoard.array.push(soundName);
+          this.DG.soundBoard.idx[soundName] = sound;
+          this.DG.soundBoard.idx[sound.sound_id] = sound;
         }
-
-        // Add to general soundboard
-        this.DG.soundBoard.array.push(soundName);
-        this.DG.soundBoard.idx[soundName] = sound;
-        this.DG.soundBoard.idx[sound.sound_id] = sound;
       }
 
-      // Adding a random sound feature..
-      this.DG.soundBoard.default.array.push("RANDOM SOUND");
       this.DG.soundBoard.array.push("RANDOM SOUND");
-
       this.DG.soundBoard.array.sort();
-      this.DG.soundBoard.default.array.sort();
 
-      if (this.DG.userPremiumType === 0) {
-        this.TPClient.choiceUpdate("discordSound", this.DG.soundBoard.default.array);
-        logIt("DEBUG", "User is not premium, default sounds only");
-      } else this.TPClient.choiceUpdate("discordSound", this.DG.soundBoard.array);
-      logIt("DEBUG", "User is premium, all sounds available");
+      this.TPClient.choiceUpdate("discordSound", this.DG.soundBoard.array);
     }
   };
 }

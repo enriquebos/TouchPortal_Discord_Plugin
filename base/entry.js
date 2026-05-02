@@ -12,8 +12,8 @@ let connectors = {};
 
 let TP_PLUGIN_INFO = {
   sdk: 6,
-  version: 5001,
-  TPDiscord_Version: "5.0.1",
+  version: 5100,
+  TPDiscord_Version: "5.1.0",
   name: `${PLUGIN_NAME}`,
   id: `${PLUGIN_ID}`,
   plugin_start_cmd_windows: '"%TP_PLUGIN_FOLDER%tpdiscord\\tpdiscord.exe"',
