@@ -1,6 +1,6 @@
 {
   "name": "tpdiscord",
-  "version": "5.0.1",
+  "version": "5.1.0",
   "description": "Touch Portal Plugin for Discord using RPC",
   "main": "src/index.js",
   "bin": {
@@ -10,9 +10,9 @@
     "start": "node src/index.js",
     "build-entry": "node base/buildentry.js base/entry.js",
     "pkg": "pkg .",
-    "pkg-win": "pkg --targets node16-win-x64 .",
-    "pkg-mac": "pkg --targets node16-macos-x64 .",
-    "pkg-linux": "pkg --targets node16-linux-x64 .",
+    "pkg-win": "pkg --targets node18-win-x64 .",
+    "pkg-mac": "pkg --targets node18-macos-x64 .",
+    "pkg-linux": "pkg --targets node18-linux-x64 .",
     "pkg-all": "node scripts/build.js"
   },
   "author": "Jameson Allen aka Spdermn02",
