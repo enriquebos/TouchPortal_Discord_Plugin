@@ -40,6 +40,6 @@
     "eslint-plugin-import": "^2.32.0",
     "npm-check-updates": "^22.0.1",
     "pkg": "^5.8.1",
-    "typescript": "^6.0.3"
+    "typescript": "^5.9.3"
   }
 }
