@@ -424,6 +424,30 @@
                     ],
                     "valueType": "choice",
                     "valueStateId": "discord_default_audio_device_change_eventState"
+                },
+                {
+                    "id": "discord_mute_status_changed",
+                    "name": "Discord: Mute Status Changed",
+                    "format": "When Discord mute status changes to $val",
+                    "type": "communicate",
+                    "valueChoices": [
+                        "Off",
+                        "On"
+                    ],
+                    "valueType": "choice",
+                    "valueStateId": "discord_mute"
+                },
+                {
+                    "id": "discord_deafen_status_changed",
+                    "name": "Discord: Deafen Status Changed",
+                    "format": "When Discord deafen status changes to $val",
+                    "type": "communicate",
+                    "valueChoices": [
+                        "Off",
+                        "On"
+                    ],
+                    "valueType": "choice",
+                    "valueStateId": "discord_deafen"
                 }
             ],
             "states": [

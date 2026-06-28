@@ -935,6 +935,26 @@ Object.assign(events, {
     valueType: "choice",
     valueStateId: "discord_default_audio_device_change_eventState",
   },
+  4: {
+    id: "discord_mute_status_changed",
+    category: "Discord",
+    name: "Discord: Mute Status Changed",
+    format: "When Discord mute status changes to $val",
+    type: "communicate",
+    valueChoices: ["Off", "On"],
+    valueType: "choice",
+    valueStateId: "discord_mute",
+  },
+  5: {
+    id: "discord_deafen_status_changed",
+    category: "Discord",
+    name: "Discord: Deafen Status Changed",
+    format: "When Discord deafen status changes to $val",
+    type: "communicate",
+    valueChoices: ["Off", "On"],
+    valueType: "choice",
+    valueStateId: "discord_deafen",
+  },
 });
 
 // module.exports = {PLUGIN_ID, PLUGIN_NAME, PLUGIN_FOLDER, PLUGIN_ICON, TP_PLUGIN_INFO, TP_PLUGIN_SETTINGS}

@@ -221,7 +221,7 @@ class VoiceStateHandler {
         this.TPClient.stateUpdate(`${this.DG.customVoiceAcivityUsers[userId]}_Speaking`, isSpeaking ? "On" : "Off");
       }
 
-      // if (this.DG.currentVoiceUsers[userId].nick === "Lampje") {
+      // if (this.DG.currentVoiceUsers[userId].nick === "") {
       //   if (!this.hasPlayedBeforeStopping) {
       //     await this.DG.Client.playSoundboardSound("Vine boom", "1464809420654645288", "1352422295402057759");
       //     logIt("INFO", "Triggered");

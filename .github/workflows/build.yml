@@ -22,7 +22,8 @@ jobs:
           node-version: '18'
           cache: npm
 
-      - run: npm ci --loglevel verbose
+      - run: npm ci --ignore-scripts --loglevel verbose
+      - run: .\node_modules\.bin\tsc -p node_modules\touchportal-api\tsconfig.json
       - run: npm run pkg-all
 
       - name: Upload artifacts to release

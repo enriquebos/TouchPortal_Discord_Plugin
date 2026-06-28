@@ -123,10 +123,12 @@ This plugin simplifies your Discord interactions, bringing essential controls to
 | **User Status: Server Mute**        | User Info (VC)     | Indicates if the user is server-muted                  |
 
 ### Events
-| **Event**                | **Description**                                                         |
-|--------------------------|-------------------------------------------------------------------------|
-| **Discord DM**           | Triggered when a Direct Message is received (See Direct Message States) |
-| **Discord Notification** | Triggered when a Notification is received (See Notification States)     |
+| **Event**                         | **Description**                                                         |
+|-----------------------------------|-------------------------------------------------------------------------|
+| **Discord DM**                    | Triggered when a Direct Message is received (See Direct Message States) |
+| **Discord Notification**          | Triggered when a Notification is received (See Notification States)     |
+| **Discord Mute Status Changed**   | Triggered when the local mute status changes to On or Off                |
+| **Discord Deafen Status Changed** | Triggered when the local deafen status changes to On or Off              |
 
 
 ## Installation and Configuration
